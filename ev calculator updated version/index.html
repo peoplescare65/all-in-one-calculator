@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Global EV Calculator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            transition: 0.3s;
+        }
+
+        :root {
+            --primary: #2ecc71;
+            --background: #ffffff;
+            --text: #2c3e50;
+            --card-bg: #f8f9fa;
+        }
+
+        body.dark-mode {
+            --primary: #27ae60;
+            --background: #2c3e50;
+            --text: #ecf0f1;
+            --card-bg: #34495e;
+        }
+
+        body {
+            background: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Calculator Container */
+        .ev-calculator {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        /* Header Section */
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        /* Currency Selector */
+        .currency-selector {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        #currency {
+            padding: 0.8rem 1.2rem;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            background: var(--card-bg);
+            color: var(--text);
+            font-size: 1rem;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 1rem;
+            background: var(--background);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Calculator Sections */
+        .calculator-section {
+            display: none;
+            padding: 1.5rem;
+            border-radius: 12px;
+            background: var(--background);
+        }
+
+        .calculator-section.active {
+            display: block;
+        }
+
+        /* Input Groups */
+        .input-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.8rem 1.2rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: var(--card-bg);
+            color: var(--text);
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        /* Dark Mode Toggle */
+        .dark-mode-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        /* Results */
+        .result {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: var(--primary);
+            color: white;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .ev-calculator {
+                padding: 1rem;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙 Dark Mode</button>
+
+    <div class="ev-calculator">
+        <div class="header">
+            <h1>Global EV Calculator</h1>
+            <div class="currency-selector">
+                <select id="currency" onchange="updateCurrency()">
+                    <option value="INR">₹ Indian Rupee</option>
+                    <option value="USD">$ US Dollar</option>
+                    <option value="EUR">€ Euro</option>
+                    <option value="GBP">£ British Pound</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showSection('range')">Range</button>
+            <button class="tab" onclick="showSection('charging')">Charging Cost</button>
+            <button class="tab" onclick="showSection('battery')">Battery Health</button>
+        </div>
+
+        <!-- Range Calculator -->
+        <div id="range" class="calculator-section active">
+            <div class="input-group">
+                <label>Battery Capacity (kWh)</label>
+                <input type="number" id="capacity" step="0.1">
+            </div>
+            <div class="input-group">
+                <label>Energy Consumption (kWh/km)</label>
+                <input type="number" id="consumption" step="0.1">
+            </div>
+            <button class="calculate-btn" onclick="calculateRange()">Calculate Range</button>
+            <div class="result" id="range-result"></div>
+        </div>
+
+        <!-- Charging Cost Calculator -->
+        <div id="charging" class="calculator-section">
+            <div class="input-group">
+                <label>Electricity Cost (per kWh)</label>
+                <input type="number" id="cost" step="0.01">
+            </div>
+            <div class="input-group">
+                <label>Battery Capacity (kWh)</label>
+                <input type="number" id="charge-capacity" step="0.1">
+            </div>
+            <div class="input-group">
+                <label>Charging Efficiency (%)</label>
+                <input type="number" id="efficiency" value="90" step="1">
+            </div>
+            <button class="calculate-btn" onclick="calculateCharging()">Calculate Cost</button>
+            <div class="result" id="charging-result"></div>
+        </div>
+
+        <!-- Battery Health Calculator -->
+        <div id="battery" class="calculator-section">
+            <div class="input-group">
+                <label>Initial Capacity (kWh)</label>
+                <input type="number" id="initial-capacity" step="0.1">
+            </div>
+            <div class="input-group">
+                <label>Years of Use</label>
+                <input type="number" id="years" step="1">
+            </div>
+            <div class="input-group">
+                <label>Cycles per Year</label>
+                <input type="number" id="cycles" step="1">
+            </div>
+            <button class="calculate-btn" onclick="calculateBattery()">Estimate Health</button>
+            <div class="result" id="battery-result"></div>
+        </div>
+    </div>
+
+    <script>
+        // Currency Settings
+        let exchangeRates = {
+            "INR": 82.90,
+            "USD": 1,
+            "EUR": 0.92,
+            "GBP": 0.79
+        };
+
+        // Theme Toggle
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const btn = document.querySelector('.dark-mode-toggle');
+            btn.textContent = document.body.classList.contains('dark-mode') ? '☀️ Light Mode' : '🌙 Dark Mode';
+        }
+
+        // Section Navigation
+        function showSection(sectionId) {
+            document.querySelectorAll('.calculator-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        // Currency Formatter
+        function formatCurrency(amount, currency) {
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: currency,
+                minimumFractionDigits: 2
+            }).format(amount);
+        }
+
+        // Range Calculator
+        function calculateRange() {
+            const capacity = parseFloat(document.getElementById('capacity').value);
+            const consumption = parseFloat(document.getElementById('consumption').value);
+            const result = document.getElementById('range-result');
+            
+            if(capacity && consumption) {
+                const range = capacity / consumption;
+                result.innerHTML = `Estimated Range: ${range.toFixed(1)} km`;
+                result.style.display = 'block';
+            }
+        }
+
+        // Charging Cost Calculator
+        function calculateCharging() {
+            const currency = document.getElementById('currency').value;
+            const cost = parseFloat(document.getElementById('cost').value);
+            const capacity = parseFloat(document.getElementById('charge-capacity').value);
+            const efficiency = parseFloat(document.getElementById('efficiency').value)/100;
+            const result = document.getElementById('charging-result');
+
+            if(cost && capacity && efficiency) {
+                const totalCost = (capacity / efficiency) * cost;
+                result.innerHTML = `Total Cost: ${formatCurrency(totalCost, currency)}`;
+                result.style.display = 'block';
+            }
+        }
+
+        // Battery Health Calculator
+        function calculateBattery() {
+            const initial = parseFloat(document.getElementById('initial-capacity').value);
+            const years = parseFloat(document.getElementById('years').value);
+            const cycles = parseFloat(document.getElementById('cycles').value);
+            const result = document.getElementById('battery-result');
+
+            if(initial && years && cycles) {
+                const totalCycles = years * cycles;
+                const degradation = Math.min(0.2, totalCycles * 0.0002);
+                const remaining = initial * (1 - degradation);
+                result.innerHTML = `Remaining Capacity: ${remaining.toFixed(1)} kWh (${((1 - degradation)*100).toFixed(1)}%)`;
+                result.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
